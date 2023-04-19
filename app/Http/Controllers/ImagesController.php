@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateImageRequest;
 use App\Jobs\ConvertImageJob;
 use App\Jobs\ResizeImageJob;
 use App\Models\Image;
+use App\Services\StatisticsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
@@ -18,13 +19,15 @@ final class ImagesController extends Controller
         return $this->response(Image::get());
     }
 
-    public function store(StoreImageRequest $request): JsonResponse
+    public function store(StoreImageRequest $request, StatisticsService $statistics): JsonResponse
     {
-        $image = DB::transaction(function () use ($request) {
+        $image = DB::transaction(function () use ($request, $statistics) {
             $image = Image::create();
+            $file = $request->file('file');
             $image
-                ->addMedia($request->file('file'))
+                ->addMedia($file)
                 ->toMediaCollection();
+            $statistics->incrementSizeForFormat($file->getMimeType(), $file->getSize());
 
             return $image;
         });
