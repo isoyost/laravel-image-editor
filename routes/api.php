@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\ImagesController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +14,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::prefix('images')
+    ->controller(ImagesController::class)
+    ->group(function () {
+        Route::get('', 'index');
+        Route::post('', 'store');
+        Route::get('/{image}', 'show');
+        Route::patch('/{image}', 'update');
+    });
