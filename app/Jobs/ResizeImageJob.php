@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Image;
+use App\Services\StatisticsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -26,11 +27,12 @@ class ResizeImageJob implements ShouldQueue
      * @throws \Spatie\MediaLibrary\MediaCollections\Exceptions\FileDoesNotExist
      * @throws \Spatie\MediaLibrary\MediaCollections\Exceptions\FileIsTooBig
      */
-    public function handle(): void
+    public function handle(StatisticsService $statistics): void
     {
         $image = InterventionImage::make($this->image->getFirstMedia()->getPath())->resize($this->width, $this->height);
         $this->image->addMedia(
             $image->filename
         )->toMediaCollection();
+        $statistics->incrementSizeForFormat($image->mime, $image->filesize());
     }
 }

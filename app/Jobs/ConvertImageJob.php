@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Image;
+use App\Services\StatisticsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -20,11 +21,12 @@ class ConvertImageJob implements ShouldQueue
     ) {
     }
 
-    public function handle(): void
+    public function handle(StatisticsService $statistics): void
     {
         $image = InterventionImage::make($this->image->getFirstMedia()->getPath())->encode($this->format);
         $this->image->addMedia(
             $image->filename
         )->toMediaCollection();
+        $statistics->incrementSizeForFormat($image->mime, $image->filesize());
     }
 }
