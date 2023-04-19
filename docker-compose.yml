@@ -1,0 +1,53 @@
+version: '3.1'
+
+services:
+    mysql:
+        image: 'mysql:8.0'
+        command: --default-authentication-plugin=mysql_native_password
+        ports:
+            - '3306:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_DATABASE: '${DB_DATABASE}'
+        volumes:
+            - 'mysql_data:/var/lib/mysql'
+        networks:
+            - default
+        healthcheck:
+            test: [ "CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}" ]
+            retries: 3
+            timeout: 5s
+        restart: on-failure
+    workspace:
+        build:
+            context: ./workspace
+            dockerfile: Dockerfile
+        container_name: workspace
+        ports:
+            - '80:80'
+        volumes:
+            - .:/var/www
+        networks:
+            - default
+        depends_on:
+            - mysql
+    redis:
+        image: 'redis:alpine'
+        ports:
+            - '6379:6379'
+        volumes:
+            - 'redis_data:/data'
+        networks:
+            - default
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            retries: 3
+            timeout: 5s
+        restart: on-failure
+
+networks:
+    default:
+
+volumes:
+    redis_data:
+    mysql_data:

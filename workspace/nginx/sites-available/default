@@ -1,0 +1,18 @@
+server {
+        listen 80;
+        listen [::]:80;
+
+        root /var/www/public;
+        index index.php;
+
+        server_name _;
+
+        location / {
+            try_files $uri $uri/ /index.php$is_args$args;
+        }
+
+        location ~ \.php$ {
+            include snippets/fastcgi-php.conf;
+            fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+        }
+}
